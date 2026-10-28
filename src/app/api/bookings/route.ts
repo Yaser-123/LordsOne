@@ -56,8 +56,10 @@ export async function POST(request: NextRequest) {
     const validation = bookingCreateSchema.safeParse(body);
 
     if (!validation.success) {
+      const issues = validation.error.issues;
+      const message = issues.map((i) => `${i.path.join('.') || 'field'}: ${i.message}`).join('; ');
       return NextResponse.json(
-        { error: 'Invalid booking data', details: validation.error.format() },
+        { error: `Invalid booking data: ${message}`, details: validation.error.format() },
         { status: 400 }
       );
     }

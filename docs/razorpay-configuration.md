@@ -18,16 +18,19 @@ LordsOne incorporates an end-to-end payment orchestration architecture using **R
 
 ---
 
-### 2. Configuring `.env.local`
+### 2. Active Test Configuration in `.env.local`
 
-Update your local `.env.local` file with the keys:
+Configure your Razorpay test keys inside your local, gitignored `.env.local` file:
 
 ```env
-# Razorpay Test Gateway Keys
-NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_YOUR_ACTUAL_KEY_ID
-RAZORPAY_KEY_SECRET=YOUR_ACTUAL_KEY_SECRET
-RAZORPAY_WEBHOOK_SECRET=YOUR_WEBHOOK_SECRET_OPTIONAL
+# Razorpay Test Gateway Keys (Keep private in .env.local)
+NEXT_PUBLIC_RAZORPAY_KEY_ID=rzp_test_your_key_id
+RAZORPAY_KEY_ID=rzp_test_your_key_id
+RAZORPAY_KEY_SECRET=your_test_key_secret
+RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
 ```
+
+> **Verification Status:** Verified live order generation and timing-safe HMAC-SHA256 signature verification in test mode.
 
 > **Important:**
 > - `NEXT_PUBLIC_RAZORPAY_KEY_ID` is exposed to the browser to initialize `Razorpay(options)`.

@@ -127,7 +127,7 @@ CREATE INDEX IF NOT EXISTS idx_bookings_reference ON public.bookings(booking_ref
 -- --------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.payments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    booking_id UUID NOT NULL REFERENCES public.bookings(id) ON DELETE CASCADE,
+    booking_id UUID NOT NULL UNIQUE REFERENCES public.bookings(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     provider TEXT NOT NULL DEFAULT 'razorpay',
     amount NUMERIC(10, 2) NOT NULL CHECK (amount >= 0),
@@ -513,8 +513,72 @@ CREATE POLICY "Users can insert their own bookings" ON public.bookings
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "Admins can update any booking" ON public.bookings;
-CREATE POLICY "Admins can update any booking" ON public.bookings
-    FOR UPDATE USING (public.is_admin());
+DROP POLICY IF EXISTS "Users can update their own bookings" ON public.bookings;
+CREATE POLICY "Users can update their own bookings" ON public.bookings
+    FOR UPDATE USING (auth.uid() = user_id OR public.is_admin());
+
+-- --------------------------------------------------------------------
+-- 12. Payment Confirmation RPC (Atomic Stored Procedure)
+-- --------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.confirm_booking_payment(
+    p_booking_id UUID,
+    p_user_id UUID,
+    p_payment_id TEXT,
+    p_order_id TEXT,
+    p_signature TEXT
+)
+RETURNS JSONB AS $$
+DECLARE
+    v_booking RECORD;
+BEGIN
+    SELECT * INTO v_booking
+    FROM public.bookings
+    WHERE id = p_booking_id AND user_id = p_user_id
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Booking not found or unauthorized.';
+    END IF;
+
+    -- Update payment table
+    UPDATE public.payments
+    SET status = 'captured',
+        razorpay_payment_id = p_payment_id,
+        razorpay_order_id = p_order_id,
+        razorpay_signature = p_signature,
+        verified_at = timezone('utc'::text, now()),
+        updated_at = timezone('utc'::text, now())
+    WHERE booking_id = p_booking_id;
+
+    -- Update booking table to confirmed
+    UPDATE public.bookings
+    SET status = 'confirmed',
+        updated_at = timezone('utc'::text, now())
+    WHERE id = p_booking_id;
+
+    -- Send notification
+    INSERT INTO public.notifications (
+        user_id,
+        title,
+        message,
+        type,
+        link_url
+    ) VALUES (
+        p_user_id,
+        'Booking Confirmed: ' || v_booking.booking_reference,
+        'Your payment of ₹' || v_booking.total_price || ' has been received. Your facility reservation is now confirmed.',
+        'payment',
+        '/student/bookings/' || p_booking_id
+    );
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'booking_id', p_booking_id,
+        'status', 'confirmed',
+        'message', 'Payment verified and booking confirmed successfully'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Payments Policies
 DROP POLICY IF EXISTS "Users can view their own payments, admins see all" ON public.payments;

@@ -6,6 +6,7 @@ interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
   showSubtitle?: boolean;
   href?: string;
+  inverted?: boolean;
 }
 
 export function Logo({
@@ -13,6 +14,7 @@ export function Logo({
   size = 'md',
   showSubtitle = true,
   href = '/',
+  inverted = false,
 }: LogoProps) {
   const iconSizes = {
     sm: 'w-7 h-7',
@@ -58,15 +60,27 @@ export function Logo({
 
       <div className="flex flex-col leading-none">
         <div className="flex items-center tracking-tight">
-          <span className={`font-bold text-navy-900 ${textSizes[size]}`}>
+          <span
+            className={`font-bold ${
+              inverted ? 'text-white' : 'text-navy-900'
+            } ${textSizes[size]}`}
+          >
             Lords
           </span>
-          <span className={`font-extrabold text-brand-600 ${textSizes[size]}`}>
+          <span
+            className={`font-extrabold ${
+              inverted ? 'text-blue-400' : 'text-brand-600'
+            } ${textSizes[size]}`}
+          >
             One
           </span>
         </div>
         {showSubtitle && (
-          <span className="text-[10px] uppercase tracking-wider font-semibold text-slate-400 mt-0.5">
+          <span
+            className={`text-[10px] uppercase tracking-wider font-semibold ${
+              inverted ? 'text-slate-400' : 'text-slate-400'
+            } mt-0.5`}
+          >
             Campus Services
           </span>
         )}

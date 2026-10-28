@@ -131,27 +131,27 @@ export default async function HomePage() {
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                     priority
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-navy-950/80 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/20 to-transparent" />
 
-                  <div className="absolute bottom-4 left-4 right-4 text-white">
+                  {/* Top-right Floating Real-time Slot Card (Zero Clipping) */}
+                  <div className="absolute top-3.5 right-3.5 z-20 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-xl px-3.5 py-2.5 shadow-lg">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700">
+                        Live Availability
+                      </span>
+                    </div>
+                    <p className="text-xs font-bold text-navy-950">Today: 14:00 – 16:00</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Instant booking confirmation</p>
+                  </div>
+
+                  <div className="absolute bottom-4 left-4 right-4 text-white z-10">
                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-500/90 text-white backdrop-blur uppercase tracking-wider mb-2 inline-block">
                       Featured Facility
                     </span>
                     <h3 className="text-lg font-bold">Sir CV Raman Central Auditorium</h3>
                     <p className="text-xs text-slate-300 mt-0.5">450-seat Dolby acoustic presentation space</p>
                   </div>
-                </div>
-
-                {/* Floating Real-time Slot Card */}
-                <div className="absolute -bottom-4 -left-4 sm:bottom-6 sm:-left-6 bg-white/95 backdrop-blur border border-slate-200/90 rounded-xl p-3.5 shadow-xl max-w-[220px]">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">
-                      Live Availability
-                    </span>
-                  </div>
-                  <p className="text-xs font-bold text-navy-900">Today: 14:00 - 16:00</p>
-                  <p className="text-[11px] text-slate-500 mt-0.5">Instant booking confirmation</p>
                 </div>
               </div>
             </div>
@@ -295,7 +295,7 @@ export default async function HomePage() {
               </Button>
             </Link>
             <Link href="/services">
-              <Button variant="outline" size="lg" className="border-white/40 text-white hover:bg-brand-700 font-semibold px-6">
+              <Button size="lg" className="bg-transparent hover:bg-white/15 border-2 border-white text-white font-bold px-8 shadow-md">
                 Browse Campus Services
               </Button>
             </Link>

@@ -43,38 +43,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'No matching payment order found', orderId });
     }
 
-    // 2. Handle events idempotently
+    // 2. Handle events idempotently via atomic stored procedure
     if (event === 'payment.captured' || status === 'captured') {
-      if (paymentRecord.status !== 'captured') {
+      const currentBooking = paymentRecord.booking;
+      if (currentBooking) {
+        await supabase.rpc('confirm_booking_payment', {
+          p_booking_id: currentBooking.id,
+          p_user_id: currentBooking.user_id,
+          p_payment_id: paymentId,
+          p_order_id: orderId,
+          p_signature: webhookSignature,
+        });
+
+        // Record raw payload
         await supabase
           .from('payments')
           .update({
-            status: 'captured',
-            razorpay_payment_id: paymentId,
-            verified_at: new Date().toISOString(),
             raw_response: payload,
             updated_at: new Date().toISOString(),
           })
           .eq('id', paymentRecord.id);
-
-        const currentBooking = paymentRecord.booking;
-        if (currentBooking && currentBooking.status === 'pending_payment') {
-          await supabase
-            .from('bookings')
-            .update({
-              status: 'confirmed',
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', currentBooking.id);
-
-          await supabase.from('notifications').insert({
-            user_id: currentBooking.user_id,
-            title: 'Payment Verified via Webhook',
-            message: `Your payment of ₹${paymentRecord.amount} for ${currentBooking.booking_reference} has been verified.`,
-            type: 'payment',
-            link_url: `/student/bookings/${currentBooking.id}`,
-          });
-        }
       }
     } else if (event === 'payment.failed') {
       await supabase

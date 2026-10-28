@@ -15,15 +15,18 @@ export const registerSchema = z.object({
   role: z.enum(['student', 'faculty', 'admin']).default('student'),
 });
 
+const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+export const uuidSchema = z.string().regex(uuidRegex, 'Invalid UUID identifier');
+
 export const bookingCreateSchema = z.object({
-  service_id: z.string().uuid('Invalid service ID'),
-  slot_id: z.string().uuid('Invalid slot ID').optional().nullable(),
+  service_id: uuidSchema,
+  slot_id: uuidSchema.optional().nullable(),
   booking_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Valid date YYYY-MM-DD required'),
   start_time: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, 'Valid start time HH:MM required'),
   end_time: z.string().regex(/^\d{2}:\d{2}(:\d{2})?$/, 'Valid end time HH:MM required'),
   quantity: z.number().int().min(1, 'Quantity must be at least 1').default(1),
   purpose: z.string().min(5, 'Please state the academic or operational purpose (min 5 chars)'),
-  notes: z.string().optional(),
+  notes: z.string().optional().or(z.literal('')).nullable(),
 });
 
 export const serviceFormSchema = z.object({
@@ -52,15 +55,15 @@ export const serviceFormSchema = z.object({
 });
 
 export const paymentVerifySchema = z.object({
-  booking_id: z.string().uuid(),
+  booking_id: uuidSchema,
   razorpay_order_id: z.string().min(1),
   razorpay_payment_id: z.string().min(1),
   razorpay_signature: z.string().min(1),
 });
 
 export const feedbackSchema = z.object({
-  booking_id: z.string().uuid(),
-  service_id: z.string().uuid(),
+  booking_id: uuidSchema,
+  service_id: uuidSchema,
   rating: z.number().int().min(1).max(5),
   review: z.string().min(5, 'Review must be at least 5 characters'),
 });
@@ -72,3 +75,4 @@ export const profileUpdateSchema = z.object({
   phone: z.string().min(10, 'Phone must be at least 10 digits').optional().nullable(),
   avatar_url: z.string().url().optional().nullable().or(z.literal('')),
 });
+

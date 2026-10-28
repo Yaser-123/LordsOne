@@ -9,7 +9,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
         {/* Brand Info */}
         <div className="space-y-4">
-          <Logo size="md" href="/" />
+          <Logo size="md" href="/" inverted={true} />
           <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
             Centralized digital booking and operational platform for Lords Institute of Engineering and Technology (LIET), Hyderabad. Designed for students, faculty, and administrative staff.
           </p>

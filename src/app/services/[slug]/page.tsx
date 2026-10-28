@@ -102,9 +102,10 @@ export default async function ServiceDetailPage({
                   No image available
                 </div>
               )}
-              <div className="absolute top-4 left-4">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-md shadow-xs ${meta.badgeClass}`}>
-                  {meta.label}
+              <div className="absolute top-4 left-4 z-10">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-white/95 text-navy-950 border border-slate-200/90 shadow-md backdrop-blur-md">
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${meta.dotClass || 'bg-brand-600'}`} />
+                  <span>{meta.label}</span>
                 </span>
               </div>
             </div>

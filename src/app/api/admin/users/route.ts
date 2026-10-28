@@ -100,6 +100,14 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
+    // Privilege escalation protection: only superadmins can assign superadmin role
+    if (role === 'superadmin' && adminProfile.role !== 'superadmin') {
+      return NextResponse.json(
+        { error: 'Only superadmins can grant superadmin privileges' },
+        { status: 403 }
+      );
+    }
+
     const updates: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };

@@ -36,43 +36,49 @@ export function formatTime(timeString: string): string {
 
 export const CATEGORY_META: Record<
   ServiceCategory,
-  { label: string; description: string; iconName: string; badgeClass: string }
+  { label: string; description: string; iconName: string; badgeClass: string; dotClass: string }
 > = {
   laboratories: {
     label: 'Laboratories & Research',
     description: 'High-tech AI, robotics, electronics, and hardware workstations',
     iconName: 'Cpu',
-    badgeClass: 'bg-blue-50 text-blue-700 border-blue-200',
+    badgeClass: 'bg-blue-50 text-blue-800 border-blue-200',
+    dotClass: 'bg-blue-600',
   },
   sports: {
     label: 'Sports & Athletics',
     description: 'Indoor courts, floodlit arenas, and athletic complexes',
     iconName: 'Trophy',
-    badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    dotClass: 'bg-emerald-600',
   },
   seminar_halls: {
     label: 'Auditoriums & Halls',
     description: 'Acoustic seminar spaces, smartboards, and tiered seating',
     iconName: 'Presentation',
-    badgeClass: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    badgeClass: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+    dotClass: 'bg-indigo-600',
   },
   event_spaces: {
     label: 'Event & Creative Spaces',
     description: 'Amphitheatre, production studios, and campus open grounds',
     iconName: 'Radio',
-    badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
+    badgeClass: 'bg-purple-50 text-purple-800 border-purple-200',
+    dotClass: 'bg-purple-600',
   },
   equipment: {
     label: 'Equipment & FabLab',
     description: '3D printers, autonomous drone kits, and high-spec sensors',
     iconName: 'Wrench',
-    badgeClass: 'bg-amber-50 text-amber-700 border-amber-200',
+    badgeClass: 'bg-amber-50 text-amber-800 border-amber-200',
+    dotClass: 'bg-amber-600',
   },
   campus_support: {
     label: 'Campus & IT Support',
     description: 'Device diagnostics, lab power, and infrastructure dispatch',
     iconName: 'HelpCircle',
-    badgeClass: 'bg-slate-100 text-slate-700 border-slate-300',
+    badgeClass: 'bg-slate-100 text-slate-800 border-slate-300',
+    dotClass: 'bg-slate-600',
   },
 };
 

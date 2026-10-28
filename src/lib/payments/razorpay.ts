@@ -17,7 +17,7 @@ export interface VerificationParams {
 
 // Check if Razorpay credentials are real test/live keys or unconfigured placeholders
 export function isRazorpayConfigured(): boolean {
-  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keyId = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
   return !!(
@@ -34,8 +34,10 @@ export function getRazorpayClient(): Razorpay | null {
     return null;
   }
 
+  const keyId = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+
   return new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID!,
+    key_id: keyId!,
     key_secret: process.env.RAZORPAY_KEY_SECRET!,
   });
 }

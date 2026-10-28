@@ -1,7 +1,9 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, Users, ArrowRight } from 'lucide-react';
+import { MapPin, Users, ArrowRight, Sparkles } from 'lucide-react';
 import { Service } from '@/types/database';
 import { CATEGORY_META, formatCurrency, cn } from '@/lib/utils/utils';
 
@@ -14,46 +16,51 @@ export function ServiceCard({
   service,
   hrefPrefix = '/services',
 }: ServiceCardProps) {
+  const [imageError, setImageError] = useState(false);
+
   const meta = CATEGORY_META[service.category] || {
     label: service.category,
-    badgeClass: 'bg-slate-100 text-slate-700',
+    badgeClass: 'bg-slate-100 text-slate-800 border-slate-300',
+    dotClass: 'bg-slate-600',
   };
 
   const detailUrl = `${hrefPrefix}/${service.slug}`;
+  const hasValidImage = !!service.image_url && !imageError;
 
   return (
     <div className="group rounded-xl border border-slate-200/90 bg-white overflow-hidden shadow-card hover:shadow-md hover:border-slate-300 transition-all flex flex-col h-full">
       {/* Thumbnail */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
-        {service.image_url ? (
+        {hasValidImage ? (
           <Image
-            src={service.image_url}
+            src={service.image_url!}
             alt={service.title}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={() => setImageError(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400">
-            No image
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 via-slate-50 to-blue-50/50 p-4 text-center">
+            <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-xs flex items-center justify-center text-brand-600 mb-2">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-bold text-navy-900 line-clamp-1">{service.title}</span>
+            <span className="text-[10px] text-slate-500 mt-0.5">{meta.label}</span>
           </div>
         )}
 
-        {/* Category Badge overlay */}
-        <div className="absolute top-3 left-3">
-          <span
-            className={cn(
-              'px-2.5 py-1 rounded-full text-[11px] font-bold border backdrop-blur-md shadow-xs',
-              meta.badgeClass
-            )}
-          >
-            {meta.label}
+        {/* High-Contrast Category Badge overlay (100% visible on any background) */}
+        <div className="absolute top-3 left-3 z-10">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-white/95 text-navy-950 border border-slate-200/90 shadow-md backdrop-blur-md">
+            <span className={cn('w-2 h-2 rounded-full shrink-0', meta.dotClass)} />
+            <span>{meta.label}</span>
           </span>
         </div>
 
-        {/* Price Tag */}
-        <div className="absolute bottom-3 right-3">
-          <span className="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-navy-900/90 text-white backdrop-blur shadow-sm">
+        {/* Price Tag with dark high-contrast pill */}
+        <div className="absolute bottom-3 right-3 z-10">
+          <span className="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-navy-950/95 text-white border border-white/20 backdrop-blur-sm shadow-md">
             {formatCurrency(Number(service.price))}
           </span>
         </div>

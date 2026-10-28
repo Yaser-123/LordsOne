@@ -93,6 +93,16 @@ export function RazorpayCheckoutModal({
         name: 'LordsOne Campus Services',
         description: `Reservation Fee: ${serviceTitle}`,
         order_id: data.order.id,
+        prefill: {
+          name: 'Campus Student',
+          email: 'student@liet.ac.in',
+          contact: '9876543210',
+        },
+        modal: {
+          ondismiss: function () {
+            setLoading(false);
+          },
+        },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         handler: async function (response: any) {
           // Cryptographically verify payment on server

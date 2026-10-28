@@ -31,16 +31,55 @@ export function Header({ profile, onSearch }: HeaderProps) {
   const [searchVal, setSearchVal] = useState('');
 
   useEffect(() => {
+    if (!profile) return;
+
     async function fetchUnread() {
-      if (!profile) return;
-      const res = await fetch('/api/notifications');
-      if (res.ok) {
-        const data = await res.json();
-        setUnreadCount(data.unreadCount || 0);
+      try {
+        const res = await fetch('/api/notifications');
+        if (res.ok) {
+          const data = await res.json();
+          setUnreadCount(data.unreadCount || 0);
+        }
+      } catch (err) {
+        console.error('Failed to fetch unread count:', err);
       }
     }
+
     fetchUnread();
-  }, [profile]);
+
+    // 1. Instant optimistic event listener (0ms latency across app)
+    const handleUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ unreadCount?: number }>;
+      if (customEvent.detail && typeof customEvent.detail.unreadCount === 'number') {
+        setUnreadCount(customEvent.detail.unreadCount);
+      } else {
+        fetchUnread();
+      }
+    };
+    window.addEventListener('notifications-updated', handleUpdate);
+
+    // 2. Supabase Realtime subscription for server pushes and multi-tabs
+    const channel = supabase
+      .channel(`realtime-notifications-${profile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${profile.id}`,
+        },
+        () => {
+          fetchUnread();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      window.removeEventListener('notifications-updated', handleUpdate);
+      supabase.removeChannel(channel);
+    };
+  }, [profile, supabase]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();

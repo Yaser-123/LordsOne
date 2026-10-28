@@ -77,62 +77,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
 
+    if (booking.user_id !== user.id) {
+      return NextResponse.json({ error: 'Forbidden: Booking does not belong to you' }, { status: 403 });
+    }
+
     if (booking.status === 'confirmed' || booking.status === 'completed') {
       return NextResponse.json({
         success: true,
         message: 'Payment already processed and verified',
         booking_id,
+        status: booking.status,
       });
     }
 
-    const requiresApproval =
-      booking.service?.booking_rules?.requires_approval || false;
-    const newStatus = requiresApproval ? 'pending' : 'confirmed';
+    // 3. Atomically confirm booking and persist captured payment via stored procedure
+    const { data: confirmResult, error: confirmError } = await supabase.rpc(
+      'confirm_booking_payment',
+      {
+        p_booking_id: booking_id,
+        p_user_id: user.id,
+        p_payment_id: razorpay_payment_id,
+        p_order_id: razorpay_order_id,
+        p_signature: razorpay_signature,
+      }
+    );
 
-    // 3. Update payment record
-    const { error: paymentUpdateError } = await supabase
-      .from('payments')
-      .update({
-        status: 'captured',
-        razorpay_payment_id,
-        razorpay_signature,
-        verified_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('booking_id', booking_id);
-
-    if (paymentUpdateError) {
-      return NextResponse.json({ error: paymentUpdateError.message }, { status: 500 });
+    if (confirmError) {
+      return NextResponse.json({ error: confirmError.message }, { status: 500 });
     }
 
-    // 4. Update booking status
-    const { error: bookingUpdateError } = await supabase
-      .from('bookings')
-      .update({
-        status: newStatus,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', booking_id);
-
-    if (bookingUpdateError) {
-      return NextResponse.json({ error: bookingUpdateError.message }, { status: 500 });
-    }
-
-    // 5. Notify user
-    await supabase.from('notifications').insert({
-      user_id: user.id,
-      title: 'Payment Successful: ' + booking.booking_reference,
-      message: `Your payment of ₹${booking.total_price} has been verified successfully. Your booking is ${newStatus}.`,
-      type: 'payment',
-      link_url: `/student/bookings/${booking_id}`,
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: 'Payment verified and booking updated successfully',
-      booking_id,
-      status: newStatus,
-    });
+    return NextResponse.json(confirmResult);
   } catch (error: unknown) {
     const err = error as Error;
     return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });

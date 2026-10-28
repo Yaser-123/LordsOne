@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     const {
@@ -11,6 +11,15 @@ export async function POST() {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+
+    // Optional defense-in-depth secret check if configured in environment
+    const requiredSecret = process.env.ADMIN_BOOTSTRAP_SECRET;
+    if (requiredSecret) {
+      const providedSecret = request.headers.get('x-bootstrap-secret');
+      if (providedSecret !== requiredSecret) {
+        return NextResponse.json({ error: 'Invalid or missing bootstrap secret' }, { status: 403 });
+      }
     }
 
     // 1. Check if any admin already exists in the system

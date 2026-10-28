@@ -56,7 +56,7 @@ export function AdminSidebar() {
     <aside className="hidden lg:flex flex-col w-64 border-r border-slate-800 bg-navy-900 text-slate-300 min-h-screen sticky top-0 shrink-0">
       {/* Brand Header */}
       <div className="p-6 border-b border-slate-800/80">
-        <Logo size="md" href="/admin/dashboard" />
+        <Logo size="md" href="/admin/dashboard" inverted={true} />
         <div className="flex items-center gap-1.5 mt-2.5 px-2 py-0.5 rounded bg-brand-500/10 border border-brand-500/20 text-brand-400 text-[10px] font-bold tracking-wider uppercase w-fit">
           <ShieldCheck className="w-3 h-3 text-brand-400" />
           <span>Admin Workspace</span>

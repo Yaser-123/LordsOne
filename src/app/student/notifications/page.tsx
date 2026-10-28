@@ -30,13 +30,43 @@ export default function StudentNotificationsPage() {
   }, []);
 
   const handleMarkAllRead = async () => {
+    // 1. Optimistically clear unread count in header and local UI immediately
+    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    window.dispatchEvent(
+      new CustomEvent('notifications-updated', { detail: { unreadCount: 0 } })
+    );
+
     try {
       await fetch('/api/notifications', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ markAll: true }),
       });
+    } catch (err) {
+      console.error(err);
       fetchNotifications();
+    }
+  };
+
+  const handleMarkSingleRead = async (id: string) => {
+    const target = notifications.find((n) => n.id === id);
+    if (!target || target.is_read) return;
+
+    // Optimistically mark single as read
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+    );
+    const remaining = notifications.filter((n) => !n.is_read && n.id !== id).length;
+    window.dispatchEvent(
+      new CustomEvent('notifications-updated', { detail: { unreadCount: remaining } })
+    );
+
+    try {
+      await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
     } catch (err) {
       console.error(err);
     }
@@ -93,7 +123,8 @@ export default function StudentNotificationsPage() {
           {notifications.map((n) => (
             <div
               key={n.id}
-              className={`p-4 flex items-start justify-between gap-4 transition-colors ${
+              onClick={() => handleMarkSingleRead(n.id)}
+              className={`p-4 flex items-start justify-between gap-4 transition-colors cursor-pointer ${
                 !n.is_read ? 'bg-brand-50/40' : 'hover:bg-slate-50/60'
               }`}
             >
